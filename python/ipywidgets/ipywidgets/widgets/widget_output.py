@@ -116,13 +116,18 @@ class Output(DOMWidget):
 
         if kernel:
             parent = None
-            if hasattr(kernel, "get_parent"):
-                parent = kernel.get_parent()
-            elif hasattr(kernel, "_parent_header"):
-                # ipykernel < 6: kernel._parent_header is the parent *request*
-                parent = kernel._parent_header
+            if ip and hasattr(ip, "get_parent"):
+                parent = ip.get_parent()
+            if not parent:
+                if hasattr(kernel, "get_parent"):
+                    parent = kernel.get_parent()
+                elif hasattr(kernel, "_parent_header"):
+                    # ipykernel < 6: kernel._parent_header is the parent *request*
+                    parent = kernel._parent_header
 
             if parent and parent.get("header"):
+                if ip and hasattr(ip, "set_parent"):
+                    ip.set_parent(parent)
                 self.msg_id = parent["header"]["msg_id"]
                 self.__counter += 1
 
