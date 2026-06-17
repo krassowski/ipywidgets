@@ -43,4 +43,26 @@ test.describe('Widget Visual Regression', () => {
       expect.soft(captures[i]).toMatchSnapshot(image);
     }
   });
+
+  test('captures Output widget output from background threads', async ({
+    page,
+    tmpPath,
+  }) => {
+    const notebook = 'output-background-thread.ipynb';
+    await page.notebook.openByPath(`${tmpPath}/${notebook}`);
+    await page.notebook.activate(notebook);
+
+    await page.notebook.runCellByCell({
+      onAfterCellRun: async (cellIndex: number) => {
+        if (cellIndex === 0) {
+          await page
+            .getByRole('button', { name: 'Start background thread' })
+            .click();
+          await expect(
+            page.locator('.jp-Notebook .widget-output')
+          ).toContainText('captured from background thread');
+        }
+      },
+    });
+  });
 });
